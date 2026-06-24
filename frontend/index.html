@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CargoClaw — Autonomous Freight Settlement on Arc</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --graphite:#1b1f24; --steel:#2b3138; --paper:#f4f2ec;
+    --amber:#f5a524; --amber-deep:#c2410c; --usdc:#2775ca; --line:#3a424b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--graphite);color:var(--paper);font-family:Inter,system-ui,sans-serif}
+  .display{font-family:Archivo,sans-serif;letter-spacing:-.02em}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .eyebrow{font-family:Archivo,sans-serif;font-weight:700;letter-spacing:.28em;text-transform:uppercase;font-size:11px}
+  .card{background:var(--steel);border:1px solid var(--line);border-radius:14px}
+  .btn{font-family:Archivo,sans-serif;font-weight:700;letter-spacing:.04em;transition:.15s}
+  .btn:active{transform:translateY(1px)}
+  input,textarea{background:#11151a;border:1px solid var(--line);color:var(--paper);border-radius:8px}
+  input:focus,textarea:focus{outline:2px solid var(--amber);outline-offset:1px}
+  /* loading-meter ruler */
+  .ruler{position:relative;height:54px;background:#11151a;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .tick{position:absolute;top:0;bottom:0;width:1px;background:#2c333b}
+  .tick span{position:absolute;bottom:3px;left:3px;font-size:9px;color:#6b7480;font-family:'JetBrains Mono',monospace}
+  .fill{position:absolute;top:6px;bottom:6px;left:0;border-radius:5px;
+        background:repeating-linear-gradient(45deg,var(--amber),var(--amber) 9px,var(--amber-deep) 9px,var(--amber-deep) 18px);
+        transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .live{animation:pulse 1.6s infinite}
+  .verdict-RELEASE{color:#4ade80;border-color:#16643a}
+  .verdict-DISPUTE{color:var(--amber);border-color:#7c4a12}
+  .verdict-HOLD{color:#94a3b8;border-color:#475569}
+  a.tx{color:var(--usdc);text-decoration:none;border-bottom:1px solid #1d4e86}
+  @media (prefers-reduced-motion:reduce){.fill{transition:none}.live{animation:none}}
+</style>
+</head>
+<body>
+<div class="max-w-5xl mx-auto px-5 py-8">
+
+  <!-- HERO -->
+  <header class="flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <div class="eyebrow" style="color:var(--amber)">CargoClaw · Track 2 + 4 · Circle Arc</div>
+      <h1 class="display text-4xl sm:text-5xl font-black mt-2 leading-none">Freight that<br/>settles itself.</h1>
+      <p class="text-sm text-slate-300 mt-3 max-w-md">An autonomous agent packs the trailer, escrows the USDC, and releases payment to the carrier the moment delivery is verified — no invoices, no follow-ups.</p>
+    </div>
+    <div class="text-right">
+      <span class="inline-flex items-center gap-2 text-xs mono live"><span class="w-2 h-2 rounded-full" style="background:#4ade80"></span> Arc Testnet</span>
+      <div class="mt-3 flex items-center gap-2">
+        <input id="api" class="text-xs px-2 py-1.5 w-56 mono" placeholder="agent API base URL" />
+      </div>
+      <div class="text-[10px] text-slate-500 mt-1">e.g. https://cargoclaw.onrender.com</div>
+    </div>
+  </header>
+
+  <div class="grid md:grid-cols-2 gap-5 mt-8">
+    <!-- LEFT: manifest -->
+    <section class="card p-5">
+      <div class="eyebrow text-slate-400">Step 1 — Manifest</div>
+      <h2 class="display text-xl font-bold mt-1">Register a shipment</h2>
+
+      <label class="block text-xs text-slate-400 mt-4 mb-1">Shipment reference</label>
+      <input id="ref" class="w-full px-3 py-2 text-sm mono" value="SHPMT-DXB-001" />
+
+      <label class="block text-xs text-slate-400 mt-3 mb-1">Carrier wallet (paid on delivery)</label>
+      <input id="carrier" class="w-full px-3 py-2 text-sm mono" value="0x000000000000000000000000000000000000dEaD" />
+
+      <div class="grid grid-cols-2 gap-3 mt-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Price (USDC)</label>
+          <input id="price" class="w-full px-3 py-2 text-sm mono" value="250" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Pallets (non-stackable)</label>
+          <input id="qty" class="w-full px-3 py-2 text-sm mono" value="18" />
+        </div>
+      </div>
+
+      <button id="analyze" class="btn w-full mt-4 py-2.5 rounded-lg" style="background:var(--amber);color:#1b1f24">Pack & escrow</button>
+      <p id="cargoMsg" class="text-xs text-slate-400 mt-2"></p>
+    </section>
+
+    <!-- RIGHT: loading meter + result -->
+    <section class="card p-5">
+      <div class="eyebrow text-slate-400">Loading meters (LDM)</div>
+      <h2 class="display text-xl font-bold mt-1">Trailer fill</h2>
+
+      <div class="ruler mt-4" id="ruler"><div class="fill" id="fill" style="width:0"></div></div>
+      <div class="flex justify-between text-xs mono text-slate-400 mt-2">
+        <span><span id="ldm" class="text-paper" style="color:var(--paper)">0.0</span> / 13.6 m</span>
+        <span><span id="trucks">0</span> truck(s)</span>
+        <span><span id="util">0</span>% util</span>
+      </div>
+
+      <div class="eyebrow text-slate-400 mt-6">Step 2 — Delivery</div>
+      <div class="grid grid-cols-2 gap-3 mt-2">
+        <button id="deliverOk" class="btn py-2.5 rounded-lg" style="background:#11151a;border:1px solid var(--line)">Verified POD</button>
+        <button id="deliverBad" class="btn py-2.5 rounded-lg" style="background:#11151a;border:1px solid var(--line)">Short delivery</button>
+      </div>
+
+      <div id="verdict" class="hidden mt-4 p-3 rounded-lg border text-sm">
+        <div class="flex items-center justify-between">
+          <span class="display font-bold" id="verdictLabel">—</span>
+          <span class="text-xs mono" id="verdictConf"></span>
+        </div>
+        <p class="text-xs text-slate-300 mt-1" id="verdictReason"></p>
+        <div class="text-xs mt-2" id="verdictTx"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="text-xs text-slate-500 mt-8 flex justify-between flex-wrap gap-2">
+    <span>Settlement rail: <span style="color:var(--usdc)">USDC</span> · Signing: Circle Developer-Controlled Wallets · Gas: USDC on Arc</span>
+    <span class="mono">github.com/Makabeez/CargoClaw</span>
+  </footer>
+</div>
+
+<script>
+  // Configurable API base — never hardcoded to localhost. Order: ?api= , field, default.
+  const params = new URLSearchParams(location.search);
+  const apiInput = document.getElementById('api');
+  apiInput.value = params.get('api') || window.CARGOCLAW_API || 'http://localhost:4005';
+  const base = () => apiInput.value.replace(/\/$/, '');
+  const $ = (id) => document.getElementById(id);
+
+  // Draw ruler ticks once (13.6m trailer).
+  (function ticks(){
+    const r = $('ruler');
+    for (let m = 1; m < 14; m++){
+      const t = document.createElement('div');
+      t.className = 'tick'; t.style.left = (m/13.6*100)+'%';
+      if (m % 2 === 0){ const s = document.createElement('span'); s.textContent = m+'m'; t.appendChild(s); }
+      r.appendChild(t);
+    }
+  })();
+
+  function renderLDM(m){
+    $('ldm').textContent = m.totalLdm.toFixed(1);
+    $('trucks').textContent = m.trucksRequired;
+    $('util').textContent = m.utilizationPct;
+    // fill shows first trailer's usage (capped visual at 13.6m)
+    const first = m.breakdown[0]?.ldmUsed || Math.min(m.totalLdm, 13.6);
+    $('fill').style.width = Math.min(first/13.6*100, 100) + '%';
+  }
+
+  async function post(path, body){
+    const res = await fetch(base()+path, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP '+res.status));
+    return data;
+  }
+
+  $('analyze').onclick = async () => {
+    $('cargoMsg').textContent = 'Packing trailer & creating escrow…';
+    const pallets = [{ width:0.8, length:1.2, quantity: Number($('qty').value) }];
+    try {
+      const d = await post('/webhook/cargo', {
+        shipmentRef: $('ref').value, carrierAddress: $('carrier').value,
+        priceUsdc: $('price').value, pallets
+      });
+      renderLDM(d.metrics);
+      $('cargoMsg').innerHTML = d.createTxHash
+        ? 'Escrow created · <span class="mono">'+d.createTxHash.slice(0,14)+'…</span>'
+        : 'Analysed (set agent env to write on-chain).';
+    } catch(e){
+      // Still show local LDM math even if the backend isn't reachable yet.
+      try { renderLDM(localLDM(Number($('qty').value))); } catch(_){}
+      $('cargoMsg').textContent = 'Agent unreachable: '+e.message+' — showing local LDM only.';
+    }
+  };
+
+  async function deliver(verified, delivered){
+    $('verdict').classList.add('hidden');
+    try{
+      const d = await post('/webhook/deliver', {
+        shipmentRef: $('ref').value,
+        pod: { verified, deliveredPallets: delivered, signer: 'gate-scanner-07' }
+      });
+      const v = d.verdict || {};
+      const box = $('verdict'); box.className = 'mt-4 p-3 rounded-lg border text-sm verdict-'+v.verdict;
+      $('verdictLabel').textContent = v.verdict;
+      $('verdictConf').textContent = v.source+' · '+Math.round((v.confidence||0)*100)+'%';
+      $('verdictReason').textContent = v.reason || '';
+      const tx = d.releaseTxHash || d.disputeTxHash;
+      $('verdictTx').innerHTML = tx ? 'tx <span class="mono">'+tx.slice(0,18)+'…</span>' : '';
+    }catch(e){ alert('Delivery failed: '+e.message); }
+  }
+  $('deliverOk').onclick  = () => deliver(true,  Number($('qty').value));
+  $('deliverBad').onclick = () => deliver(true,  Math.max(0, Number($('qty').value)-3));
+
+  // Mirror of the server LDM math for offline preview.
+  function localLDM(qty){
+    const W=2.45,L=13.6; const u=[]; for(let i=0;i<qty;i++)u.push({w:0.8,l:1.2});
+    u.sort((a,b)=>b.l-a.l); const trucks=[{used:0,rows:[]}];
+    for(const p of u){let placed=false;for(const t of trucks){const r=t.rows.find(r=>r.rw>=p.w&&Math.abs(r.l-p.l)<=0.3);if(r){r.rw-=p.w;placed=true;break;}if(t.used+p.l<=L){t.rows.push({l:p.l,rw:W-p.w});t.used+=p.l;placed=true;break;}}if(!placed)trucks.push({used:p.l,rows:[{l:p.l,rw:W-p.w}]});}
+    const total=trucks.reduce((s,t)=>s+t.used,0);
+    return {totalLdm:Math.round(total*100)/100,trucksRequired:trucks.length,utilizationPct:Math.round(total/(trucks.length*L)*1000)/10,breakdown:trucks.map(t=>({ldmUsed:Math.round(t.used*100)/100}))};
+  }
+  renderLDM(localLDM(18));
+</script>
+</body>
+</html>

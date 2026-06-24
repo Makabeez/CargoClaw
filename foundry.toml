@@ -1,0 +1,19 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+# Pin metadata hash so the deployed bytecode is reproducible for Sourcify
+# verification. (Lesson from PulseBNB: a bare deploy that ignores these
+# settings produces bytecode that won't match at verification time.)
+bytecode_hash = "ipfs"
+evm_version = "paris"
+
+[rpc_endpoints]
+arc_testnet = "${ARC_RPC_URL}"
+
+[etherscan]
+# Arc verifies via Sourcify; no API key required.
+arc_testnet = { key = "unused", chain = 5042002, url = "https://testnet.arcscan.app/api" }

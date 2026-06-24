@@ -1,0 +1,9 @@
+services:
+  cargoclaw-agent:
+    build: ./agent
+    container_name: cargoclaw-agent
+    restart: unless-stopped
+    env_file:
+      - ./agent/.env   # gitignored; secrets live here only
+    ports:
+      - "4005:3000"

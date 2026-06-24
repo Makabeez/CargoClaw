@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Inter, Arial, sans-serif">
+  <rect width="980" height="560" fill="#f4f2ec"/>
+  <text x="40" y="48" font-size="26" font-weight="800" fill="#1b1f24">CargoClaw — autonomous freight settlement on Arc</text>
+  <text x="40" y="74" font-size="14" fill="#5b6470">Three separated on-chain identities: no party both pays and releases.</text>
+
+  <!-- Buyer -->
+  <g>
+    <rect x="40" y="120" width="200" height="92" rx="12" fill="#fff" stroke="#c9c3b4"/>
+    <text x="60" y="150" font-size="16" font-weight="700" fill="#1b1f24">SME Buyer</text>
+    <text x="60" y="172" font-size="12" fill="#5b6470">Circle wallet A</text>
+    <text x="60" y="192" font-size="12" fill="#5b6470">creates · approves · funds</text>
+  </g>
+
+  <!-- Agent -->
+  <g>
+    <rect x="370" y="96" width="280" height="200" rx="14" fill="#1b1f24"/>
+    <text x="390" y="128" font-size="17" font-weight="800" fill="#f5a524">CargoClaw Agent</text>
+    <rect x="390" y="142" width="240" height="38" rx="8" fill="#2b3138"/>
+    <text x="404" y="166" font-size="13" fill="#f4f2ec">1 · LDM bin-packing (loading meters)</text>
+    <rect x="390" y="188" width="240" height="38" rx="8" fill="#2b3138"/>
+    <text x="404" y="212" font-size="13" fill="#f4f2ec">2 · LLM verdict: RELEASE / HOLD / DISPUTE</text>
+    <rect x="390" y="234" width="240" height="38" rx="8" fill="#2b3138"/>
+    <text x="404" y="258" font-size="13" fill="#f4f2ec">3 · integrity invariant (verified-only)</text>
+  </g>
+
+  <!-- Circle wallets band -->
+  <g>
+    <rect x="370" y="312" width="280" height="48" rx="10" fill="#e8eef7" stroke="#2775ca"/>
+    <text x="390" y="333" font-size="13" font-weight="700" fill="#2775ca">Circle Developer-Controlled Wallets (MPC)</text>
+    <text x="390" y="351" font-size="11" fill="#3f74ad">no raw keys · signs contract calls · gas paid in USDC</text>
+  </g>
+
+  <!-- Escrow -->
+  <g>
+    <rect x="370" y="404" width="280" height="116" rx="14" fill="#fff" stroke="#c9c3b4"/>
+    <text x="390" y="432" font-size="16" font-weight="700" fill="#1b1f24">CargoEscrow.sol  ·  Arc</text>
+    <text x="390" y="456" font-size="12" fill="#5b6470">Pending → InTransit → Delivered</text>
+    <text x="390" y="476" font-size="12" fill="#5b6470">+ Dispute → resolveDispute</text>
+    <text x="390" y="496" font-size="12" fill="#5b6470">+ refundExpired (never-stuck funds)</text>
+    <text x="390" y="514" font-size="11" fill="#9aa1ab">reentrancy-guarded · arbiter-bounded</text>
+  </g>
+
+  <!-- Carrier -->
+  <g>
+    <rect x="760" y="404" width="180" height="92" rx="12" fill="#fff" stroke="#c9c3b4"/>
+    <text x="780" y="434" font-size="16" font-weight="700" fill="#1b1f24">Carrier</text>
+    <text x="780" y="456" font-size="12" fill="#5b6470">receives USDC</text>
+    <text x="780" y="476" font-size="12" fill="#5b6470">on verified delivery</text>
+  </g>
+
+  <!-- arrows -->
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1b1f24"/>
+    </marker>
+    <marker id="g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2775ca"/>
+    </marker>
+  </defs>
+  <line x1="240" y1="158" x2="366" y2="158" stroke="#1b1f24" stroke-width="2" marker-end="url(#a)"/>
+  <text x="250" y="150" font-size="11" fill="#5b6470">manifest</text>
+
+  <line x1="510" y1="296" x2="510" y2="308" stroke="#2775ca" stroke-width="2" marker-end="url(#g)"/>
+  <line x1="510" y1="360" x2="510" y2="400" stroke="#2775ca" stroke-width="2" marker-end="url(#g)"/>
+  <text x="520" y="386" font-size="11" fill="#3f74ad">confirmDelivery / fund / dispute</text>
+
+  <line x1="650" y1="462" x2="756" y2="462" stroke="#1b1f24" stroke-width="2" marker-end="url(#a)"/>
+  <text x="660" y="454" font-size="11" fill="#5b6470">release USDC</text>
+
+  <!-- buyer funds escrow path -->
+  <path d="M140,212 L140,462 L366,462" fill="none" stroke="#1b1f24" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+  <text x="150" y="300" font-size="11" fill="#5b6470">fund escrow (USDC)</text>
+</svg>

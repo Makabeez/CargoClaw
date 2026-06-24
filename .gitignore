@@ -1,0 +1,22 @@
+# --- secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*-recovery-file.json
+*recovery*.json
+entity-secret*.txt
+
+# --- deps / build ---
+node_modules/
+dist/
+build/
+out/
+artifacts/
+cache/
+
+# --- misc ---
+*.log
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,20 @@
+{
+  "name": "cargoclaw-agent",
+  "version": "2.0.0",
+  "description": "Autonomous freight-settlement agent on Circle Arc — Ignyte Stablecoins Commerce Stack Challenge",
+  "author": "Makabeez (Geiserjoe)",
+  "license": "MIT",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "setup": "node scripts/setup-wallets.js",
+    "test": "node test/logistics.test.js && node test/decision.test.js"
+  },
+  "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^10.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.0",
+    "express": "^4.19.2"
+  }
+}
