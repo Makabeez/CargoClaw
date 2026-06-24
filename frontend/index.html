@@ -123,7 +123,7 @@
   // Configurable API base — never hardcoded to localhost. Order: ?api= , field, default.
   const params = new URLSearchParams(location.search);
   const apiInput = document.getElementById('api');
-  apiInput.value = params.get('api') || window.CARGOCLAW_API || 'http://localhost:4005';
+  apiInput.value = params.get('api') || window.CARGOCLAW_API || 'https://cargoclaw-api.baserep.xyz';
   const base = () => apiInput.value.replace(/\/$/, '');
   const $ = (id) => document.getElementById(id);
 
