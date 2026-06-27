@@ -14,6 +14,8 @@
 ![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636)
 ![Node](https://img.shields.io/badge/Node-20-339933)
 
+**▶️ Demo video:** https://youtu.be/IYvREdjGNrE · **🔗 Live demo:** https://cargo-claw-two.vercel.app
+
 **Live contract:** [`0x3307CDA181bc306c6a7Be3848D46217052Aaa761`](https://testnet.arcscan.app/address/0x3307CDA181bc306c6a7Be3848D46217052Aaa761) on Arc Testnet · **Settlement tx:** [`0xe11c0ffa…8c1235`](https://testnet.arcscan.app/tx/0xe11c0ffacefdb3f850ae64b895082eb965063add45eb00f90ac7f3edf98c1235) · **Full on-chain proof →** [`docs/PROOF.md`](docs/PROOF.md)
 
 </div>
